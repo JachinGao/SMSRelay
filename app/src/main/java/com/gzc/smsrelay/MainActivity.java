@@ -7,12 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
 
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
@@ -23,20 +27,49 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gzc.smsrelay.mail.SendMailUtil;
 import com.gzc.smsrelay.receiver.ChatNotificationListenerService;
 import com.gzc.smsrelay.service.SMSService;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SendMailUtil.MailSendLister {
+    public static final String TAG = MainActivity.class.getSimpleName();
     public static final int PERMISSION_CODE = 1;
+
+    private List<String> list = new ArrayList<>();
     SMSService smsService;
+
+    private FloatingActionButton fab;
+    private Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            if (list.size() < 8) {
+                list.add((String) msg.obj);
+            } else {
+                list.remove(0);
+                list.add((String) msg.obj);
+            }
+            StringBuilder builder = new StringBuilder();
+
+            for (String s : list) {
+                builder.append(s).append("\n\n");
+            }
+            mInfo.setText(builder.toString());
+        }
+    };
 
     private String[] permissions = new String[]{Manifest.permission.READ_SMS,
             Manifest.permission.RECEIVE_SMS};
@@ -45,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             SMSService.LocalBinder binder = (SMSService.LocalBinder) service;
-            smsService =  binder.getService();
+            smsService = binder.getService();
         }
 
         @Override
@@ -53,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
     };
+    private TextView mInfo;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +97,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
+
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,SettingActivity.class));
+                startActivity(new Intent(MainActivity.this, SettingActivity.class));
             }
         });
 
@@ -83,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             requestPermission();
         }
 
-        if (!isNotificationListenersEnabled()){
+        if (!isNotificationListenersEnabled()) {
             gotoNotificationAccessSetting();
         }
 
@@ -91,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Button mStart = findViewById(R.id.start);
         Button mStop = findViewById(R.id.stop);
+        mInfo = findViewById(R.id.mInfo);
 
         mStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,6 +144,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 smsService.stopShow();
             }
         });
+
+
+        SendMailUtil.register(this);
+    }
+
+    private void startYourAsynchronousJob() {
+        //handler.sendEmptyMessageDelayed(0,100);
     }
 
     @Override
@@ -134,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            startActivity(new Intent(MainActivity.this,SettingActivity.class));
+            startActivity(new Intent(MainActivity.this, SettingActivity.class));
             return true;
         }
 
@@ -190,16 +235,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    private void startForeground(){
+    private void startForeground() {
         Intent intent = new Intent(MainActivity.this, SMSService.class);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
-        }else {
+        } else {
             startService(intent);
         }
-
-        bindService(intent,mConnection, Context.BIND_AUTO_CREATE);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void toggleNotificationListenerService(Context context) {
@@ -207,8 +251,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         pm.setComponentEnabledSetting(new ComponentName(context, ChatNotificationListenerService.class),
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
 
-        pm.setComponentEnabledSetting(new ComponentName(context, ChatNotificationListenerService .class),
+        pm.setComponentEnabledSetting(new ComponentName(context, ChatNotificationListenerService.class),
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
     }
 
+    @Override
+    public void onSuccess(String content) {
+
+        Log.e(TAG, "onSuccess: " + content);
+
+        Message message = Message.obtain();
+        message.obj = content;
+        handler.sendMessage(message);
+
+
+    }
+
+    @Override
+    public void onError(String content) {
+
+        Log.e(TAG, "onError: " + content);
+
+        Message message = Message.obtain();
+        message.obj = content;
+        handler.sendMessage(message);
+    }
 }

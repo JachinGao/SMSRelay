@@ -10,6 +10,8 @@ import com.gzc.smsrelay.bean.Bean;
 import java.io.File;
 
 public class SendMailUtil {
+
+    public static final String TAG = SendMailUtil.class.getSimpleName();
     //qq
 //    private static final String HOST = "smtp.qq.com";
 //    private static final String PORT = "587";
@@ -34,6 +36,13 @@ public class SendMailUtil {
             }
         }).start();
     }
+
+    private static MailSendLister mLister;
+
+    public static void register(MailSendLister lister) {
+        mLister = lister;
+    }
+
 
     public static void send(final MessageInfo info) {
 
@@ -64,6 +73,12 @@ public class SendMailUtil {
 
 
         if (from_address == null || from_address.equals(Bean.DEFAULT)) {
+
+            if (mLister!=null){
+                mLister.onError("地址错误,请重新配置");
+                Log.e(TAG, "createMail: 地址错误,请重新配置" );
+            }
+
             return null;
         }
 
@@ -78,8 +93,19 @@ public class SendMailUtil {
         mailInfo.setSubject(info.getmSender() == null ? "title" : info.getmSender()); // 邮件主题
         mailInfo.setContent(info.getmContent() == null ? "test" : info.getmContent()); // 邮件文本
 
-        Log.e("info", "createMail: title = " + info.getmSender() + ", content = " + info.getmContent());
+        if (mLister != null) {
+            String str = "createMail: \ntitle = " + info.getmSender() + "\ncontent = " + info.getmContent();
+            mLister.onSuccess(str);
+        }
+
+        Log.e(TAG, "createMail: title = " + info.getmSender() + ", content = " + info.getmContent());
         return mailInfo;
+    }
+
+    public interface MailSendLister {
+        void onSuccess(String content);
+
+        void onError(String content);
     }
 
 }

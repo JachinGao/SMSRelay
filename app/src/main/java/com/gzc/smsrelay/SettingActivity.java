@@ -10,8 +10,13 @@ import android.widget.Toast;
 
 import com.gzc.smsrelay.bean.Bean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SettingActivity extends AppCompatActivity {
     public static final String TAG = SettingActivity.class.getSimpleName();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

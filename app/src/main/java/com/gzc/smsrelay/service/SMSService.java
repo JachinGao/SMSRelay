@@ -34,16 +34,12 @@ public class SMSService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.e(TAG, "onBind: ");
         return mBinder;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-
-        Log.e(TAG, "onCreate: ");
     }
 
 
@@ -68,6 +64,7 @@ public class SMSService extends Service {
 
     public void stopShow() {
         isRunning = false;
+        handler.removeCallbacksAndMessages(null);
     }
 
 
@@ -83,7 +80,6 @@ public class SMSService extends Service {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            //Android O上对Notification进行了修改，如果设置的targetSDKVersion>=26建议使用此种方式创建通知栏
 
             String channelId = getPackageName();
             if (!isCreateChannel) {
@@ -140,7 +136,7 @@ public class SMSService extends Service {
                 String h1 = h < 10 ? "0" + h : "" + h;
                 String d1 = d < 10 ? "0" + d : "" + d;
 
-                builder.setContentText("已运行时间：" + d1 + "天  " + h1 + ":" + m1 + ":" + s1);
+                builder.setContentText("运行时间：" + d1 + "天  " + h1 + ":" + m1 + ":" + s1);
                 notificationManager.notify(1, builder.build());
             }
             Log.e(TAG, "run: time = " + cnt + ",  is running = " + isRunning);

@@ -58,11 +58,6 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 SendMailUtil.send(messageInfo);
 
-                String smsToast = "New SMS received from : "
-                        + content.toString() + "\n'";
-//                Toast.makeText(context, smsToast, Toast.LENGTH_LONG)
-//                        .show();
-
             }
 
         } catch (Exception e) {
