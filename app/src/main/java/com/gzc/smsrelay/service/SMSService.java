@@ -78,11 +78,13 @@ public class SMSService extends Service {
 
         Notification notification;
 
+        if (null == notificationManager) {
+            notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        }
+
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //Android O上对Notification进行了修改，如果设置的targetSDKVersion>=26建议使用此种方式创建通知栏
-            if (null == notificationManager) {
-                notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            }
+
             String channelId = getPackageName();
             if (!isCreateChannel) {
                 NotificationChannel notificationChannel = new NotificationChannel(channelId,

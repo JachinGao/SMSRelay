@@ -1,5 +1,6 @@
 package com.gzc.smsrelay.receiver;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.graphics.Bitmap;
 
@@ -10,6 +11,9 @@ import android.util.Log;
 
 import com.gzc.smsrelay.mail.MessageInfo;
 import com.gzc.smsrelay.mail.SendMailUtil;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ChatNotificationListenerService extends NotificationListenerService {
 
@@ -33,32 +37,45 @@ public class ChatNotificationListenerService extends NotificationListenerService
         Bitmap largeIcon = extras.getParcelable(Notification.EXTRA_LARGE_ICON); //通知的大图标，注意和获取小图标的区别
 
 
+//        if (title != null && title.equals("中转站后台运行")) {
+//            return;
+//        }
+//
+//        if (packageName.contains("messaging")) {
+//            return;
+//        }
+//
+//        if (title != null && title.equals("选择键盘")) {
+//            return;
+//        }
+//
         Log.e(TAG, "onNotificationPosted: title = " + title + ",  content = " + content + "" + ", package name = " + packageName);
 
-        if (title!=null&&title.equals("中转站后台运行")){
-            return;
+        if (packageName != null && packageName.contains("com.tencent.")) {
+
+            String substring = null;
+            if (title.contains("(")) {
+                int index = title.indexOf("(");
+                substring = title.substring(0, index - 1);
+                Log.e(TAG, "onNotificationPosted: title = " + substring + ",  content = " + content + "" + ", package name = " + packageName);
+            }
+
+            Date date = new Date(System.currentTimeMillis()); //下面是获取短信的发送时间
+            @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+
+            MessageInfo messageInfo = new MessageInfo();
+            //String mTitle = substring == null ? content : substring;
+
+
+            if (packageName.equals(" com.tencent.mobileqq")){
+                messageInfo.setmSender("转发|QQ|" + time);
+            }else {
+                messageInfo.setmSender("转发|微信|" + time);
+            }
+            messageInfo.setmContent(content);
+            SendMailUtil.send(messageInfo);
         }
 
-        if (packageName.contains("messaging")){
-            return;
-        }
-
-        if (title!=null&& title.equals("选择键盘")){
-            return;
-        }
-
-
-        String substring = null;
-        if (title != null && title.contains("(")) {
-            int index = title.indexOf("(");
-            substring = title.substring(0, index-1);
-            Log.e(TAG, "onNotificationPosted: title = " + substring + ",  content = " + content + "" + ", package name = " + packageName);
-        }
-
-        MessageInfo messageInfo = new MessageInfo();
-        messageInfo.setmSender(substring == null ? content : substring);
-        messageInfo.setmContent(content);
-        SendMailUtil.send(messageInfo);
 
     }
 }

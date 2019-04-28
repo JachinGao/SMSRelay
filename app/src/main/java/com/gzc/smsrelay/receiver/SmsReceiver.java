@@ -52,8 +52,8 @@ public class SmsReceiver extends BroadcastReceiver {
                 }
 
                 MessageInfo messageInfo = new MessageInfo();
-                messageInfo.setmSender(sender);
-                messageInfo.setmContent(content.toString());
+                messageInfo.setmSender("转发|短信|"+date_time);
+                messageInfo.setmContent(sender+"\n"+content.toString());
                 messageInfo.setmDate(date_time);
 
                 SendMailUtil.send(messageInfo);
@@ -62,7 +62,6 @@ public class SmsReceiver extends BroadcastReceiver {
                         + content.toString() + "\n'";
 //                Toast.makeText(context, smsToast, Toast.LENGTH_LONG)
 //                        .show();
-
 
             }
 
