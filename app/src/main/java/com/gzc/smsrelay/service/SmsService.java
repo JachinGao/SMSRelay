@@ -19,9 +19,9 @@ import android.util.Log;
 import com.gzc.smsrelay.MainActivity;
 import com.gzc.smsrelay.R;
 
-public class SMSService extends Service {
+public class SmsService extends Service {
 
-    public static final String TAG = SMSService.class.getSimpleName();
+    public static final String TAG = SmsService.class.getSimpleName();
     private static final String NOTIFICATION_CHANNEL_NAME = "BackgroundLocation";
 
     private NotificationManager notificationManager = null;
@@ -115,8 +115,8 @@ public class SMSService extends Service {
 
 
     public class LocalBinder extends Binder {
-        public SMSService getService() {
-            return SMSService.this;
+        public SmsService getService() {
+            return SmsService.this;
         }
     }
 
@@ -139,7 +139,6 @@ public class SMSService extends Service {
                 builder.setContentText("运行时间：" + d1 + "天  " + h1 + ":" + m1 + ":" + s1);
                 notificationManager.notify(1, builder.build());
             }
-            Log.e(TAG, "run: time = " + cnt + ",  is running = " + isRunning);
             handler.postDelayed(this, 1000);
 
         }

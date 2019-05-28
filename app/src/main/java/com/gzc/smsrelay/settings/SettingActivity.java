@@ -1,4 +1,4 @@
-package com.gzc.smsrelay;
+package com.gzc.smsrelay.settings;
 
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +8,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.gzc.smsrelay.R;
 import com.gzc.smsrelay.bean.Bean;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SettingActivity extends AppCompatActivity {
     public static final String TAG = SettingActivity.class.getSimpleName();

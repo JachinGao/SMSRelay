@@ -7,15 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -26,58 +25,50 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gzc.smsrelay.adapter.ShowSmsAdapter;
 import com.gzc.smsrelay.mail.SendMailUtil;
 import com.gzc.smsrelay.receiver.ChatNotificationListenerService;
-import com.gzc.smsrelay.service.SMSService;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.gzc.smsrelay.service.SmsService;
+import com.gzc.smsrelay.settings.SettingActivity;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SendMailUtil.MailSendLister {
-    public static final String TAG = MainActivity.class.getSimpleName();
+
     public static final int PERMISSION_CODE = 1;
 
-    private List<String> list = new ArrayList<>();
-    SMSService smsService;
+    private SmsService smsService;
+    private ShowSmsAdapter smsAdapter;
+    private RecyclerView mRecyclerView;
 
-    private FloatingActionButton fab;
+
+    private String[] permissions = new String[]{Manifest.permission.READ_SMS,
+            Manifest.permission.RECEIVE_SMS};
+
+
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
 
-            if (list.size() < 8) {
-                list.add((String) msg.obj);
-            } else {
-                list.remove(0);
-                list.add((String) msg.obj);
-            }
-            StringBuilder builder = new StringBuilder();
-
-            for (String s : list) {
-                builder.append(s).append("\n\n");
-            }
-            mInfo.setText(builder.toString());
+            smsAdapter.addData((String) msg.obj);
+            smsAdapter.notifyDataSetChanged();
+            mRecyclerView.smoothScrollToPosition(smsAdapter.getItemCount() - 1);
         }
     };
 
-    private String[] permissions = new String[]{Manifest.permission.READ_SMS,
-            Manifest.permission.RECEIVE_SMS};
 
     private ServiceConnection mConnection = new ServiceConnection() {
+
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            SMSService.LocalBinder binder = (SMSService.LocalBinder) service;
+            SmsService.LocalBinder binder = (SmsService.LocalBinder) service;
             smsService = binder.getService();
         }
 
@@ -86,7 +77,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
     };
-    private TextView mInfo;
+
+
 
 
     @Override
@@ -94,18 +86,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        initView();
+
+        if (!isNotificationListenersEnabled()) {
+            gotoNotificationAccessSetting();
+        }
+
+        toggleNotificationListenerService(this);
+
+
+        SendMailUtil.register(this);
+    }
+
+    private void initView() {
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        fab = findViewById(R.id.fab);
-
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, SettingActivity.class));
-            }
-        });
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -120,37 +117,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             requestPermission();
         }
 
-        if (!isNotificationListenersEnabled()) {
-            gotoNotificationAccessSetting();
-        }
+        mRecyclerView = findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager
+                (this, LinearLayoutManager.VERTICAL, false));
 
-        toggleNotificationListenerService(this);
+        smsAdapter = new ShowSmsAdapter();
+        mRecyclerView.setAdapter(smsAdapter);
 
-        Button mStart = findViewById(R.id.start);
-        Button mStop = findViewById(R.id.stop);
-        mInfo = findViewById(R.id.mInfo);
-
-        mStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startForeground();
-            }
-        });
-
-        mStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                smsService.stopForeground(true);
-                smsService.stopShow();
-            }
-        });
-
-
-        SendMailUtil.register(this);
-    }
-
-    private void startYourAsynchronousJob() {
-        //handler.sendEmptyMessageDelayed(0,100);
     }
 
     @Override
@@ -165,19 +138,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(MainActivity.this, SettingActivity.class));
             return true;
@@ -188,25 +157,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
             startForeground();
-
-            // Handle the camera action
         } else if (id == R.id.nav_gallery) {
             smsService.stopForeground(true);
             smsService.stopShow();
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
         } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+            Uri uri = Uri.parse("https://github.com/JachinGao/SMSRelay/releases");    //设置跳转的网站
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -234,9 +197,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
     }
 
-
     private void startForeground() {
-        Intent intent = new Intent(MainActivity.this, SMSService.class);
+        Intent intent = new Intent(MainActivity.this, SmsService.class);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
@@ -257,21 +219,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onSuccess(String content) {
-
-        Log.e(TAG, "onSuccess: " + content);
-
         Message message = Message.obtain();
         message.obj = content;
         handler.sendMessage(message);
-
-
     }
 
     @Override
     public void onError(String content) {
-
-        Log.e(TAG, "onError: " + content);
-
         Message message = Message.obtain();
         message.obj = content;
         handler.sendMessage(message);

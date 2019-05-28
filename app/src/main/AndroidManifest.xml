@@ -17,7 +17,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <activity android:name=".SettingActivity"
+        <activity android:name=".settings.SettingActivity"
             android:label="@string/config"/>
 
         <activity  android:name=".MainActivity"
@@ -46,7 +46,7 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-        <service android:name=".service.SMSService" />
+        <service android:name=".service.SmsService" />
     </application>
 
 </manifest>

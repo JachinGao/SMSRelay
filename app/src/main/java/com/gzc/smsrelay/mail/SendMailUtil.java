@@ -76,7 +76,6 @@ public class SendMailUtil {
 
             if (mLister!=null){
                 mLister.onError("地址错误,请重新配置");
-                Log.e(TAG, "createMail: 地址错误,请重新配置" );
             }
 
             return null;
@@ -98,7 +97,6 @@ public class SendMailUtil {
             mLister.onSuccess(str);
         }
 
-        Log.e(TAG, "createMail: title = " + info.getmSender() + ", content = " + info.getmContent());
         return mailInfo;
     }
 

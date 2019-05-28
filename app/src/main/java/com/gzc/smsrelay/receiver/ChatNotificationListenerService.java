@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import com.gzc.smsrelay.mail.MessageInfo;
 import com.gzc.smsrelay.mail.SendMailUtil;
@@ -64,7 +65,7 @@ public class ChatNotificationListenerService extends NotificationListenerService
 
 
     private String contentTrim(String title, String content) {
-        String subTitle = null;
+        String subTitle = title;
         if (title == null) {
             return "" + content;
         }
