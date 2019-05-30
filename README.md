@@ -30,7 +30,7 @@ https://github.com/JachinGao/SMSRelay/releases
 ![Image text](https://github.com/JachinGao/SMSRelay/blob/master/picture/config.png)
 
 
-使用QQ邮箱获取授权码的界面
+> 使用QQ邮箱获取授权码的界面
 
 ![Image text](https://github.com/JachinGao/SMSRelay/blob/master/picture/code.PNG)
 
