@@ -1,8 +1,8 @@
 # 消息中转小工具APP
 
 
-
 ### 功能
+* 满足特定需求用户；
 * 收纳推送通知，自动转发到邮箱；
 
 
@@ -12,6 +12,12 @@
 
 ### UI界面
 ![Image text](https://github.com/JachinGao/SMSRelay/blob/master/picture/UI.png)
+
+
+### 下载
+
+https://github.com/JachinGao/SMSRelay/releases
+
 
 ### 使用文档
 
