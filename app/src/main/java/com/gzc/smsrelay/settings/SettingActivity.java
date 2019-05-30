@@ -9,7 +9,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.gzc.smsrelay.R;
-import com.gzc.smsrelay.bean.Bean;
+import com.gzc.smsrelay.bean.Config;
+import com.gzc.smsrelay.mail.MailProxy;
 
 public class SettingActivity extends AppCompatActivity {
     public static final String TAG = SettingActivity.class.getSimpleName();
@@ -25,7 +26,7 @@ public class SettingActivity extends AppCompatActivity {
 
     private void initView() {
 
-        Button mButton = findViewById(R.id.ok);
+        Button mSave = findViewById(R.id.ok);
         Button mClear = findViewById(R.id.clear);
 
         final EditText mHost = findViewById(R.id.host);
@@ -35,14 +36,14 @@ public class SettingActivity extends AppCompatActivity {
         final EditText mAuthorizationCode = findViewById(R.id.authorization_code);
 
 
-        final SharedPreferences userSettings = getSharedPreferences(Bean.SHARED_DATA_ADDRESS, MODE_PRIVATE);
+        final SharedPreferences userSettings = getSharedPreferences(Config.SHARED_DATA_ADDRESS, MODE_PRIVATE);
 
-        String mHostStr = userSettings.getString(Bean.HOST, Bean.HOST_DEFAULT);
-        String mPortStr = userSettings.getString(Bean.PORT, Bean.PORT_DEFAULT);
+        String mHostStr = userSettings.getString(Config.HOST, Config.HOST_DEFAULT);
+        String mPortStr = userSettings.getString(Config.PORT, Config.PORT_DEFAULT);
 
-        String mSendStr = userSettings.getString(Bean.SEND_EMAIL_ADDRESS, Bean.DEFAULT);
-        String mAuthorizationCodeStr = userSettings.getString(Bean.AUTHORIZATION_CODE, Bean.DEFAULT);
-        String mReceiveStr = userSettings.getString(Bean.RECEIVE_EMAIL_ADDRESS, Bean.DEFAULT);
+        String mSendStr = userSettings.getString(Config.SEND_EMAIL_ADDRESS, Config.DEFAULT);
+        String mAuthorizationCodeStr = userSettings.getString(Config.AUTHORIZATION_CODE, Config.DEFAULT);
+        String mReceiveStr = userSettings.getString(Config.RECEIVE_EMAIL_ADDRESS, Config.DEFAULT);
 
         mHost.setText(mHostStr);
         mPort.setText(mPortStr);
@@ -51,7 +52,7 @@ public class SettingActivity extends AppCompatActivity {
         mReceiveEmail.setText(mReceiveStr);
 
 
-        mButton.setOnClickListener(new View.OnClickListener() {
+        mSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String mHostStr = mHost.getText().toString();
@@ -62,13 +63,13 @@ public class SettingActivity extends AppCompatActivity {
 
 
                 SharedPreferences.Editor edit = userSettings.edit();
-                edit.putString(Bean.HOST,mHostStr);
-                edit.putString(Bean.PORT,mPortStr);
-                edit.putString(Bean.SEND_EMAIL_ADDRESS,mSend);
-                edit.putString(Bean.AUTHORIZATION_CODE,mCode);
-                edit.putString(Bean.RECEIVE_EMAIL_ADDRESS,mReceive);
+                edit.putString(Config.HOST,mHostStr);
+                edit.putString(Config.PORT,mPortStr);
+                edit.putString(Config.SEND_EMAIL_ADDRESS,mSend);
+                edit.putString(Config.AUTHORIZATION_CODE,mCode);
+                edit.putString(Config.RECEIVE_EMAIL_ADDRESS,mReceive);
                 edit.apply();
-
+                MailProxy.getInstance().refreshMailConfigInfo();
                 finish();
             }
         });
@@ -76,15 +77,16 @@ public class SettingActivity extends AppCompatActivity {
         mClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mHost.setText(Bean.DEFAULT);
-                mPort.setText(Bean.DEFAULT);
-                mSendEmail.setText(Bean.DEFAULT);
-                mAuthorizationCode.setText(Bean.DEFAULT);
-                mReceiveEmail.setText(Bean.DEFAULT);
+                mHost.setText(Config.DEFAULT);
+                mPort.setText(Config.DEFAULT);
+                mSendEmail.setText(Config.DEFAULT);
+                mAuthorizationCode.setText(Config.DEFAULT);
+                mReceiveEmail.setText(Config.DEFAULT);
 
                 SharedPreferences.Editor edit = userSettings.edit();
                 edit.clear();
                 edit.apply();
+                MailProxy.getInstance().refreshMailConfigInfo();
                 Toast.makeText(SettingActivity.this, "数据已清除", Toast.LENGTH_SHORT).show();
             }
         });

@@ -1,5 +1,6 @@
 package com.gzc.smsrelay.adapter;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,18 +9,27 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.gzc.smsrelay.R;
+import com.gzc.smsrelay.mail.MessageInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ShowSmsAdapter extends RecyclerView.Adapter<ShowSmsAdapter.ShowSmsViewHolder> {
 
-    private List<String> list = new ArrayList<>();
+    private List<MessageInfo> list = new ArrayList<>();
 
-    public void addData(String info) {
+    public void initData(List<MessageInfo> messageInfoList) {
+        list.addAll(messageInfoList);
+    }
+
+    public void addData(MessageInfo info) {
         list.add(info);
     }
 
+
+    public void clearData() {
+        list.clear();
+    }
 
     @NonNull
     @Override
@@ -31,7 +41,7 @@ public class ShowSmsAdapter extends RecyclerView.Adapter<ShowSmsAdapter.ShowSmsV
 
     @Override
     public void onBindViewHolder(@NonNull ShowSmsViewHolder showSmsViewHolder, int position) {
-        showSmsViewHolder.bind((position + 1) + ". " + list.get(position));
+        showSmsViewHolder.bind(position, list.get(position));
     }
 
     @Override
@@ -40,15 +50,28 @@ public class ShowSmsAdapter extends RecyclerView.Adapter<ShowSmsAdapter.ShowSmsV
     }
 
     class ShowSmsViewHolder extends RecyclerView.ViewHolder {
-        private TextView infoText;
+        private TextView idx;
+        private TextView source;
+        private TextView date;
+        private TextView sender;
+        private TextView content;
 
         ShowSmsViewHolder(@NonNull View itemView) {
             super(itemView);
-            infoText = itemView.findViewById(R.id.info);
+            idx = itemView.findViewById(R.id.idx);
+            source = itemView.findViewById(R.id.source);
+            date = itemView.findViewById(R.id.date);
+            sender = itemView.findViewById(R.id.sender);
+            content = itemView.findViewById(R.id.content);
         }
 
-        void bind(String info) {
-            infoText.setText(info);
+        @SuppressLint("SetTextI18n")
+        void bind(int position, MessageInfo info) {
+            idx.setText(String.valueOf(position + 1) + ". ");
+            source.setText(info.getSource());
+            date.setText(info.getDate());
+            sender.setText(info.getSenderName());
+            content.setText(info.getContent());
         }
 
     }

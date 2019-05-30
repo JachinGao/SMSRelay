@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 
 import com.gzc.smsrelay.mail.MessageInfo;
-import com.gzc.smsrelay.mail.SendMailUtil;
+import com.gzc.smsrelay.mail.MailProxy;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,7 +32,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 StringBuilder content = new StringBuilder();
                 String sender = null;
-                String date_time = null;
+                SmsMessage sms=null;
 
                 Object[] object = (Object[]) extras.get("pdus");
 
@@ -40,24 +40,24 @@ public class SmsReceiver extends BroadcastReceiver {
                     return;
                 }
 
-                for (Object pdus : object) {
-                    byte[] pdusMsg = (byte[]) pdus;
-                    SmsMessage sms = SmsMessage.createFromPdu(pdusMsg);
+                for (Object pd : object) {
+                    byte[] pdMsg = (byte[]) pd;
+                    sms = SmsMessage.createFromPdu(pdMsg);
                     sender = sms.getOriginatingAddress();//发送短信的手机号
                     String str = sms.getMessageBody();//短信内容
-
-                    Date date = new Date(sms.getTimestampMillis()); //下面是获取短信的发送时间
-                    date_time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
                     content.append(str);
                 }
 
+                Date date = new Date(sms == null ? System.currentTimeMillis() : sms.getTimestampMillis()); //下面是获取短信的发送时间
+                String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+
                 MessageInfo messageInfo = new MessageInfo();
-                messageInfo.setmSender("转发|短信|"+date_time);
-                messageInfo.setmContent(sender+"\n"+content.toString());
-                messageInfo.setmDate(date_time);
+                messageInfo.setSource("短信");
+                messageInfo.setSenderName(sender);
+                messageInfo.setDate(time);
+                messageInfo.setContent(content.toString());
 
-                SendMailUtil.send(messageInfo);
-
+                MailProxy.getInstance().send(messageInfo);
             }
 
         } catch (Exception e) {

@@ -6,10 +6,9 @@ import android.app.Notification;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import com.gzc.smsrelay.mail.MessageInfo;
-import com.gzc.smsrelay.mail.SendMailUtil;
+import com.gzc.smsrelay.mail.MailProxy;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,28 +46,38 @@ public class ChatNotificationListenerService extends NotificationListenerService
             return;
         }
 
-        Date date = new Date(System.currentTimeMillis()); //下面是获取短信的发送时间
+        Date date = new Date(System.currentTimeMillis());
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
 
         MessageInfo messageInfo = new MessageInfo();
 
-        if (packageName.equals("com.tencent.mobileqq")) {
-            messageInfo.setmSender("转发|QQ|" + time);
-        } else {
-            messageInfo.setmSender("转发|微信|" + time);
+        switch (packageName) {
+            case QQ:
+                messageInfo.setSource("QQ");
+                break;
+            case WE_CHAT_1:
+                messageInfo.setSource("微信");
+                break;
+            case WE_CHAT_2:
+                messageInfo.setSource("企业微信");
+                break;
         }
 
-        messageInfo.setmContent(contentTrim(title, content));
-        SendMailUtil.send(messageInfo);
+        messageInfo.setDate(time);
+        messageInfo.setSenderName(contentTrim(title));
+        messageInfo.setContent(content);
 
+        MailProxy.getInstance().send(messageInfo);
     }
 
 
-    private String contentTrim(String title, String content) {
+    private String contentTrim(String title) {
         String subTitle = title;
+
         if (title == null) {
-            return "" + content;
+            return "NULL";
         }
+
         if (title.contains("(") || title.contains(")")) {
             int start = title.indexOf("(");
             int end = title.indexOf(")");
@@ -91,8 +100,8 @@ public class ChatNotificationListenerService extends NotificationListenerService
             }
         }
 
-        return subTitle + " | " + content;
-
-
+        return subTitle;
     }
+
+
 }

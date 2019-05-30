@@ -1,6 +1,6 @@
 package com.gzc.smsrelay.bean;
 
-public class Bean {
+public class Config {
 
     public static final String HOST = "host";
     public static final String HOST_DEFAULT = "smtp.qq.com";

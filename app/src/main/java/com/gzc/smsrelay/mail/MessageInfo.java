@@ -1,31 +1,42 @@
 package com.gzc.smsrelay.mail;
 
 public class MessageInfo {
-    private String mSender;
-    private String mContent;
-    private String mDate;
 
-    public String getmSender() {
-        return mSender;
+    private String senderName;
+    private String source;
+    private String content;
+    private String date;
+
+
+    public String getSource() {
+        return source;
     }
 
-    public void setmSender(String mSender) {
-        this.mSender = mSender;
+    public void setSource(String source) {
+        this.source = source;
     }
 
-    public String getmContent() {
-        return mContent;
+    public String getSenderName() {
+        return senderName;
     }
 
-    public void setmContent(String mContent) {
-        this.mContent = mContent;
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
-    public String getmDate() {
-        return mDate;
+    public String getContent() {
+        return content;
     }
 
-    public void setmDate(String mDate) {
-        this.mDate = mDate;
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }
